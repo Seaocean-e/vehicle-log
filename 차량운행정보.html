@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>운행기록부 — 씨오션전자</title>
+<style>
+:root{--bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,.1);--border2:rgba(0,0,0,.18);--text:#1a1a18;--text2:#6b6b64;--text3:#9e9e96;--accent:#1a3a5c;--accent-bg:#e8eef5;--accent-text:#1a3a5c;--green:#1a5c3a;--green-bg:#e8f5ee;--red:#5c1a1a;--red-bg:#f5e8e8;--r:10px;--rl:16px}
+@media(prefers-color-scheme:dark){:root{--bg:#18181a;--surface:#232325;--surface2:#2c2c2f;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);--text:#f0efe9;--text2:#9e9e96;--text3:#6b6b64;--accent:#5b8fc4;--accent-bg:#1a2a3a;--accent-text:#7ab0e0;--green:#4caf7d;--green-bg:#1a2e22;--red:#e07070;--red-bg:#2e1a1a}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+.header{background:var(--accent);padding:20px 20px 18px}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.header h1{font-size:18px;font-weight:600;color:#fff;letter-spacing:-.3px}
+.header .company{font-size:12px;color:rgba(255,255,255,.6)}
+.seq-badge{font-size:11px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);padding:3px 9px;border-radius:20px}
+.content{padding:16px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border-radius:var(--rl);border:.5px solid var(--border);overflow:hidden}
+.card-header{padding:12px 16px 10px;border-bottom:.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-header .icon{font-size:15px}
+.card-header .title{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase}
+.card-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.car-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 16px}
+.car-btn{padding:11px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;-webkit-appearance:none}
+.car-btn:active{transform:scale(.96)}
+.car-btn.selected{background:var(--accent-bg);border-color:var(--accent)}
+.car-btn .cn{font-size:14px;font-weight:600;color:var(--text)}
+.car-btn .cp{font-size:11px;color:var(--text2);margin-top:2px}
+.car-btn.selected .cn{color:var(--accent-text)}
+.car-btn.selected .cp{color:var(--accent-text);opacity:.7}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;color:var(--text2);font-weight:500}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;font-size:16px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface2);color:var(--text);font-family:inherit;-webkit-appearance:none;appearance:none}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b64' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+.field textarea{resize:none;height:80px;line-height:1.5}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.km-result{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:var(--r);padding:12px 14px;border:1px solid var(--border)}
+.km-result .lbl{font-size:13px;color:var(--text2)}
+.km-result .val{font-size:22px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.km-result .val.ok{color:var(--green)}
+.km-result .val.err{color:var(--red);font-size:14px}
+.purpose-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.purpose-btn{padding:10px 6px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);text-align:center;transition:all .15s;font-family:inherit;-webkit-appearance:none}
+.purpose-btn:active{transform:scale(.96)}
+.purpose-btn.selected{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.submit-btn{width:100%;padding:16px;border-radius:var(--rl);background:var(--accent);color:#fff;font-size:16px;font-weight:600;border:none;cursor:pointer;font-family:inherit;letter-spacing:-.2px;transition:opacity .15s,transform .1s;-webkit-appearance:none}
+.submit-btn:active{opacity:.85;transform:scale(.98)}
+.submit-btn:disabled{opacity:.4}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:var(--surface);padding:11px 20px;border-radius:24px;font-size:14px;font-weight:500;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.terror{background:#5c1a1a;color:#fff}
+.success-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px}
+.success-overlay.show{display:flex}
+.success-icon{font-size:64px}
+.success-title{font-size:22px;font-weight:700;color:var(--green)}
+.success-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.6}
+.success-detail{background:var(--surface);border-radius:var(--rl);border:.5px solid var(--border);padding:16px 20px;width:100%;font-size:13px;line-height:1.9;color:var(--text2)}
+.success-detail strong{color:var(--text);font-weight:600}
+.btn-again{width:100%;padding:15px;border-radius:var(--rl);background:var(--accent);color:#fff;font-size:16px;font-weight:600;border:none;cursor:pointer;font-family:inherit}
+.spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+.submit-btn.loading .btn-text{display:none}
+.submit-btn.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>업무용 차량 운행기록부</h1>
+    <span class="seq-badge" id="seqBadge">No.—</span>
+  </div>
+  <div class="company">씨오션전자㈜</div>
+</div>
+
+<div class="content">
+  <div class="card">
+    <div class="card-header"><span class="icon">🚗</span><span class="title">차량 선택</span></div>
+    <div class="car-grid">
+      <button class="car-btn" onclick="selectCar(this,'투싼','184다 6795')"><div class="cn">투싼</div><div class="cp">184다 6795</div></button>
+      <button class="car-btn" onclick="selectCar(this,'투싼','181하 1309')"><div class="cn">투싼</div><div class="cp">181하 1309</div></button>
+      <button class="car-btn" onclick="selectCar(this,'투싼','101고 4815')"><div class="cn">투싼</div><div class="cp">101고 4815</div></button>
+      <button class="car-btn" onclick="selectCar(this,'스포티지','165허 7912')"><div class="cn">스포티지</div><div class="cp">165허 7912</div></button>
+      <button class="car-btn" onclick="selectCar(this,'소나타','333어 3779')"><div class="cn">소나타</div><div class="cp">333어 3779</div></button>
+      <button class="car-btn" onclick="selectCar(this,'모닝','213저 9361')"><div class="cn">모닝</div><div class="cp">213저 9361</div></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">👤</span><span class="title">사용자 정보</span></div>
+    <div class="card-body">
+      <div class="row2">
+        <div class="field"><label>⑦ 부서</label><input type="text" id="dept" autocomplete="off"></div>
+        <div class="field"><label>⑧ 직책</label><input type="text" id="position" autocomplete="off"></div>
+      </div>
+      <div class="field"><label>⑨ 성명</label><input type="text" id="name" autocomplete="name"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">📍</span><span class="title">운행 정보</span></div>
+    <div class="card-body">
+      <div class="row2">
+        <div class="field"><label>⑪ 사용 일자</label><input type="date" id="useDate"></div>
+        <div class="field"><label>⑩ 사용 목적</label>
+          <select id="purposeSel">
+            <option value="">선택하세요</option>
+            <option>업무(고객방문)</option>
+            <option>업무(현장출장)</option>
+            <option>업무(자재운반)</option>
+            <option>업무(사무처리)</option>
+            <option>출퇴근</option>
+            <option>기타</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>⑫ 출발지</label><input type="text" id="from" autocomplete="off"></div>
+        <div class="field"><label>⑭ 도착지</label><input type="text" id="to" autocomplete="off"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>⑬ 출발 시 누적 km</label><input type="number" id="kmStart" inputmode="numeric" oninput="calcKm()"></div>
+        <div class="field"><label>⑮ 도착 시 누적 km</label><input type="number" id="kmEnd" inputmode="numeric" oninput="calcKm()"></div>
+      </div>
+      <div class="km-result"><span class="lbl">⑯ 주행거리</span><span class="val" id="kmVal">— km</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">🎯</span><span class="title">목적 빠른 선택</span></div>
+    <div class="card-body">
+      <div class="purpose-grid">
+        <button class="purpose-btn" onclick="selPurpose(this,'업무(고객방문)')">고객 방문</button>
+        <button class="purpose-btn" onclick="selPurpose(this,'업무(현장출장)')">현장 출장</button>
+        <button class="purpose-btn" onclick="selPurpose(this,'업무(자재운반)')">자재 운반</button>
+        <button class="purpose-btn" onclick="selPurpose(this,'업무(사무처리)')">사무 처리</button>
+        <button class="purpose-btn" onclick="selPurpose(this,'출퇴근')">출퇴근</button>
+        <button class="purpose-btn" onclick="selPurpose(this,'기타')">기타</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">📝</span><span class="title">⑱ 비고 (선택사항)</span></div>
+    <div class="card-body">
+      <div class="field"><textarea id="memo"></textarea></div>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submitLog()">
+    <span class="btn-text">✅ 운행기록 저장</span>
+    <span class="spinner"></span>
+  </button>
+</div>
+
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon">✅</div>
+  <div class="success-title">저장 완료!</div>
+  <div class="success-sub" id="successSub">OneDrive Excel에 기록되었습니다</div>
+  <div class="success-detail" id="successDetail"></div>
+  <button class="btn-again" onclick="resetForm()">+ 새 운행기록 입력</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// Power Automate Webhook URL — 아래 URL을 교체하세요
+const PA_URL = 'https://default3584ebd2255d4398aeeb9350657869.6a.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/1ac2230d561242c486e966b478b12289/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=4MQsOaZ0gDItPllvE7XCX-5p4xgC-wvHjyMu4xolS6A';
+// =============================================
+
+let car = null;
+let recNo = parseInt(localStorage.getItem('recNo')||'1');
+
+const today = new Date();
+const pad = n => String(n).padStart(2,'0');
+document.getElementById('useDate').value = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+document.getElementById('seqBadge').textContent = 'No.'+recNo;
+
+function selectCar(el,name,plate){
+  document.querySelectorAll('.car-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected'); car={name,plate};
+}
+function selPurpose(el,val){
+  document.querySelectorAll('.purpose-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('purposeSel').value=val;
+}
+document.getElementById('purposeSel').addEventListener('change',function(){
+  const v=this.value;
+  document.querySelectorAll('.purpose-btn').forEach(b=>{
+    b.classList.toggle('selected',b.textContent.trim()==='고객 방문'&&v==='업무(고객방문)'
+      ||b.textContent.trim()==='현장 출장'&&v==='업무(현장출장)'
+      ||b.textContent.trim()==='자재 운반'&&v==='업무(자재운반)'
+      ||b.textContent.trim()==='사무 처리'&&v==='업무(사무처리)'
+      ||b.textContent.trim()===v);
+  });
+});
+function calcKm(){
+  const s=parseFloat(document.getElementById('kmStart').value),e=parseFloat(document.getElementById('kmEnd').value),el=document.getElementById('kmVal');
+  if(!isNaN(s)&&!isNaN(e)){const d=e-s;if(d>0){el.textContent=Math.round(d)+' km';el.className='val ok';}else{el.textContent='도착 km 확인 필요';el.className='val err';}}
+  else{el.textContent='— km';el.className='val';}
+}
+function toast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+type;
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+function validate(){
+  if(!car){toast('🚗 차량을 선택해주세요');return false;}
+  if(!document.getElementById('name').value.trim()){toast('👤 성명을 입력해주세요');return false;}
+  if(!document.getElementById('from').value.trim()){toast('📍 출발지를 입력해주세요');return false;}
+  if(!document.getElementById('to').value.trim()){toast('📍 도착지를 입력해주세요');return false;}
+  const s=parseFloat(document.getElementById('kmStart').value),e=parseFloat(document.getElementById('kmEnd').value);
+  if(isNaN(s)||isNaN(e)){toast('🔢 누적 km를 입력해주세요');return false;}
+  if(e<=s){toast('⚠️ 도착 km가 출발 km보다 커야 합니다');return false;}
+  if(!document.getElementById('purposeSel').value){toast('🎯 사용 목적을 선택해주세요');return false;}
+  return true;
+}
+async function submitLog(){
+  if(!validate())return;
+  const dv=document.getElementById('useDate').value;
+  const days=['일','월','화','수','목','금','토'];
+  const day=days[new Date(dv).getDay()];
+  const s=parseFloat(document.getElementById('kmStart').value),e=parseFloat(document.getElementById('kmEnd').value);
+  const rec={
+    일련번호:recNo, 차종:car.name, 차량번호:car.plate,
+    부서:document.getElementById('dept').value.trim(),
+    직책:document.getElementById('position').value.trim(),
+    성명:document.getElementById('name').value.trim(),
+    사용목적:document.getElementById('purposeSel').value,
+    사용일자:dv, 요일:day,
+    출발지:document.getElementById('from').value.trim(),
+    출발시누적km:s, 도착지:document.getElementById('to').value.trim(),
+    도착시누적km:e, 주행거리km:Math.round(e-s),
+    비고:document.getElementById('memo').value.trim(),
+    기록시각:new Date().toLocaleString('ko-KR')
+  };
+  const btn=document.getElementById('submitBtn');
+  btn.classList.add('loading');btn.disabled=true;
+  if(PA_URL==='YOUR_POWER_AUTOMATE_WEBHOOK_URL_HERE'){
+    await new Promise(r=>setTimeout(r,700));
+    btn.classList.remove('loading');btn.disabled=false;
+    saveLocal(rec);showSuccess(rec,true);return;
+  }
+  try{
+    await fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec),mode:'no-cors'});
+    btn.classList.remove('loading');btn.disabled=false;
+    saveLocal(rec);showSuccess(rec,false);
+  }catch(err){
+    btn.classList.remove('loading');btn.disabled=false;
+    saveLocal(rec);toast('⚠️ 네트워크 오류 — 로컬 임시 저장됨','terror');
+  }
+}
+function saveLocal(rec){
+  let logs=JSON.parse(localStorage.getItem('vlogs')||'[]');logs.push(rec);
+  localStorage.setItem('vlogs',JSON.stringify(logs));
+  recNo++;localStorage.setItem('recNo',String(recNo));
+}
+function showSuccess(rec,demo){
+  document.getElementById('successDetail').innerHTML=
+    '<strong>차량</strong> '+rec.차종+' '+rec.차량번호+'<br>'+
+    '<strong>운전자</strong> '+rec.성명+(rec.부서?' · '+rec.부서:'')+'<br>'+
+    '<strong>일자</strong> '+rec.사용일자+' ('+rec.요일+')<br>'+
+    '<strong>경로</strong> '+rec.출발지+' → '+rec.도착지+'<br>'+
+    '<strong>주행거리</strong> '+rec.주행거리km+' km'+
+    (demo?'<br><br><em style="color:var(--text3)">⚙️ Power Automate URL 설정 후 OneDrive 자동 저장</em>':'');
+  document.getElementById('successSub').textContent=demo?'로컬 임시 저장 완료 (데모 모드)':'OneDrive Excel에 기록되었습니다 ✓';
+  document.getElementById('successOverlay').classList.add('show');
+  document.getElementById('seqBadge').textContent='No.'+recNo;
+}
+function resetForm(){
+  document.getElementById('successOverlay').classList.remove('show');
+  document.querySelectorAll('.car-btn,.purpose-btn').forEach(b=>b.classList.remove('selected'));
+  car=null;
+  ['from','to','kmStart','kmEnd','memo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('purposeSel').value='';
+  document.getElementById('kmVal').textContent='— km';
+  document.getElementById('kmVal').className='val';
+  const t=new Date(),p=n=>String(n).padStart(2,'0');
+  document.getElementById('useDate').value=t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate());
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

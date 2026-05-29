@@ -244,7 +244,7 @@ async function submitLog(){
     saveLocal(rec);showSuccess(rec,true);return;
   }
   try{
-    await fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec),mode:'no-cors'});
+    await fetch(PA_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(rec),mode:'no-cors'});
     btn.classList.remove('loading');btn.disabled=false;
     saveLocal(rec);showSuccess(rec,false);
   }catch(err){

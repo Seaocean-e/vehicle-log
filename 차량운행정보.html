@@ -178,6 +178,37 @@ const pad = n => String(n).padStart(2,'0');
 document.getElementById('useDate').value = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
 document.getElementById('seqBadge').textContent = 'No.'+recNo;
 
+// 마지막 입력값 전체 복원
+const lastRec = JSON.parse(localStorage.getItem('lastRec')||'null');
+if(lastRec){
+  ['dept','position','name','from','to','memo'].forEach(id=>{
+    const key={'dept':'부서','position':'직책','name':'성명','from':'출발지','to':'도착지','memo':'비고'}[id];
+    if(lastRec[key]) document.getElementById(id).value=lastRec[key];
+  });
+  if(lastRec['출발시누적km']) document.getElementById('kmStart').value=lastRec['출발시누적km'];
+  if(lastRec['도착시누적km']) document.getElementById('kmEnd').value=lastRec['도착시누적km'];
+  if(lastRec['사용목적']) {
+    document.getElementById('purposeSel').value=lastRec['사용목적'];
+    document.querySelectorAll('.purpose-btn').forEach(b=>{
+      b.classList.toggle('selected',
+        b.textContent.trim()==='고객 방문'&&lastRec['사용목적']==='업무(고객방문)'
+        ||b.textContent.trim()==='현장 출장'&&lastRec['사용목적']==='업무(현장출장)'
+        ||b.textContent.trim()==='자재 운반'&&lastRec['사용목적']==='업무(자재운반)'
+        ||b.textContent.trim()==='사무 처리'&&lastRec['사용목적']==='업무(사무처리)'
+        ||b.textContent.trim()===lastRec['사용목적']);
+    });
+  }
+  if(lastRec['차량번호']){
+    document.querySelectorAll('.car-btn').forEach(b=>{
+      if(b.querySelector('.cp').textContent.trim()===lastRec['차량번호'].trim()){
+        b.classList.add('selected');
+        car={name:b.querySelector('.cn').textContent,plate:lastRec['차량번호']};
+      }
+    });
+  }
+  calcKm();
+}
+
 function selectCar(el,name,plate){
   document.querySelectorAll('.car-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected'); car={name,plate};
@@ -244,7 +275,7 @@ async function submitLog(){
     saveLocal(rec);showSuccess(rec,true);return;
   }
   try{
-    await fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});
+    await fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec),mode:'no-cors'});
     btn.classList.remove('loading');btn.disabled=false;
     saveLocal(rec);showSuccess(rec,false);
   }catch(err){
@@ -255,6 +286,7 @@ async function submitLog(){
 function saveLocal(rec){
   let logs=JSON.parse(localStorage.getItem('vlogs')||'[]');logs.push(rec);
   localStorage.setItem('vlogs',JSON.stringify(logs));
+  localStorage.setItem('lastRec',JSON.stringify(rec));
   recNo++;localStorage.setItem('recNo',String(recNo));
 }
 function showSuccess(rec,demo){

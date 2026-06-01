@@ -156,8 +156,8 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;b
 </div>
 
 <div class="success-overlay" id="successOverlay">
-  <div class="success-icon">✅</div>
-  <div class="success-title">저장 완료!</div>
+  <div class="success-icon" id="successIcon">✅</div>
+  <div class="success-title" id="successTitle">저장 완료!</div>
   <div class="success-sub" id="successSub">OneDrive Excel에 기록되었습니다</div>
   <div class="success-detail" id="successDetail"></div>
   <button class="btn-again" onclick="resetForm()">+ 새 운행기록 입력</button>
@@ -275,12 +275,26 @@ async function submitLog(){
     saveLocal(rec);showSuccess(rec,true);return;
   }
   try{
-    await fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});
+    const res = await fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});
     btn.classList.remove('loading');btn.disabled=false;
-    saveLocal(rec);showSuccess(rec,false);
+    if(res.ok||res.status===202){
+      saveLocal(rec);showSuccess(rec,false);
+    } else {
+      throw new Error('서버오류 '+res.status);
+    }
   }catch(err){
     btn.classList.remove('loading');btn.disabled=false;
-    saveLocal(rec);toast('⚠️ 네트워크 오류 — 로컬 임시 저장됨','terror');
+    // 실패시 재시도 안내
+    document.getElementById('successDetail').innerHTML=
+      '<strong style="color:var(--red)">❌ 저장 실패!</strong><br><br>'+
+      '인터넷 연결을 확인하고 다시 시도해주세요.<br>'+
+      '<small style="color:var(--text3)">오류: '+err.message+'</small>';
+    document.getElementById('successSub').textContent='Excel에 저장되지 않았습니다';
+    document.getElementById('successSub').style.color='var(--red)';
+    document.getElementById('successIcon').textContent='❌';
+    document.getElementById('successTitle').textContent='저장 실패';
+    document.getElementById('successTitle').style.color='var(--red)';
+    document.getElementById('successOverlay').classList.add('show');
   }
 }
 function saveLocal(rec){
@@ -303,6 +317,10 @@ function showSuccess(rec,demo){
 }
 function resetForm(){
   document.getElementById('successOverlay').classList.remove('show');
+  document.getElementById('successIcon').textContent='✅';
+  document.getElementById('successTitle').textContent='저장 완료!';
+  document.getElementById('successTitle').style.color='var(--green)';
+  document.getElementById('successSub').style.color='';
   document.querySelectorAll('.car-btn,.purpose-btn').forEach(b=>b.classList.remove('selected'));
   car=null;
   ['from','to','kmStart','kmEnd','memo'].forEach(id=>document.getElementById(id).value='');
